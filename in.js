@@ -1,13 +1,11 @@
 let num = [1,2,3,4];
 let rand;
-sad;
-array.forEach((v)=> {
-    
-});
 
-function data()
+var $form = document.getElementById("")
+
+function checkInput()
 {
-    
+
 }
 
 //테스트 확인중

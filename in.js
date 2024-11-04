@@ -3,6 +3,8 @@ let rand;
 let tries =[];
 
 
+
+
 function checkInput(input)
 {
     //길이가 4이하인가?
@@ -28,10 +30,10 @@ var $logs = document.getElementById("logs");
 
 $form.addEventListener('submit',(event)=>{
     event.preventDefault();
-    $input.value = checkInput(value) {
+    $input.value = checkInput((value) =>{
         $logs.textContent ="홈런";
         return;
-    }
+    })
 })
 
 //테스트 확인중

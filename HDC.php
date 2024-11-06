@@ -16,3 +16,4 @@
     <?=$today?>
 </body>
 </html>
+httpd.exe -k install

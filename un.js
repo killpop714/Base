@@ -7,6 +7,7 @@ const Andata = new Array(num);
 const $input = document.querySelector('#i1');
 const $btn = document.querySelector('#Checkbtn');
 const $spam = document.querySelector("#spam");
+const $order = document.querySelector("#order");
 
 let data;
 let word;
@@ -56,7 +57,5 @@ const Output = () =>
 
 $input.addEventListener('input', inputdata);
 $btn.addEventListener('click',Output);
-
-Andata
 
 

@@ -44,13 +44,15 @@ const inputdata = (e) =>
 const Output = () =>
  {
     //데이터 처리 API(우리말썜)
-    const Data = fetch(`http://opendict.korean.go.kr/api/search?certkey_no=4989&key=${apiKey}&target_type=search&req_type=json&part=word&q=${data}&sort=dict&start=1&num=10`)
-    Data.then((res)=> res.json())  
-    .then((ndata)=>ndata.channel.item[0].word.replace("-",""))
-    console.log(Data.ndata.item[0].word);
-    //단어
+    const Data = fetch(`http://opendict.korean.go.kr/api/search?certkey_no=4989&key=${apiKey}&target_type=search&req_type=json&part=word&q=${data}&sort=dict&start=1&num=10`);
+    Data.then(res => res.json())
+    .then(data => console.log(data.channel.item[0].word.replace("-","")))
+    .catch((err) => console.log(err));
 
-    if(!word && data.length === 3 || data.length === 3 && word[word.length -1], data[0] && Data.then((res)=> res.json()).then((ndata)=>ndata.channel.item[0].word.replace("-","")) == data)
+    let ifData = Data.then(`${data}`)
+
+
+    if(!word && data.length === 3 || data.length === 3 && word[word.length -1], data[0] && Data.then(`${data}`) == data)
     {
         //데이터 대입
         flag =true;

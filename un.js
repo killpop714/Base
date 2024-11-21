@@ -1,15 +1,18 @@
-var num = 0;
+const apiKey = 	'48E081530EA6C2E51EBD31A0C5AD12A9';
+
+let num = 0;
 const $btn = document.querySelector('#Checkbtn');
 const $input = document.querySelector('#i1');
 const $order = document.querySelector("#order");
 const $word = document.querySelector("#word");
 const $time = document.querySelector("#time");
+const $output =document.querySelector('#output');
 
-const  Data = ["가성성","가루집","나노관","나무람","나트륨","나팔꼿"]
-let UseWord = [];
+
 
 let data;//현재 단어
 let word;//단어(제시어)
+let Data; //API에 들어갈 단어 변수
 
 //시간 설정
 let timesec=0;
@@ -22,7 +25,7 @@ while(isNaN(num) || num<1 || !num)
 {
     num = Number(prompt("참가자는 몇명인가요?"));
     if(num<=0)
-        console.log("다시 입력해주세요.");
+        alert("다시 입력해주세요.");
 }
 
 //순서
@@ -36,16 +39,25 @@ const inputdata = (e) =>
 
 };
 
+
+
 const Output = () =>
  {
+    //데이터 처리 API(우리말썜)
+    const Data = fetch(`http://opendict.korean.go.kr/api/search?certkey_no=4989&key=${apiKey}&target_type=search&req_type=json&part=word&q=${data}&sort=dict&start=1&num=10`)
+    Data.then((res)=> res.json())  
+    .then((ndata)=>ndata.channel.item[0].word.replace("-",""))
+    console.log(Data.ndata.item[0].word);
+    //단어
 
-
-    if(!word && data.length === 3 || data.length === 3 && word[word.length -1], data[0] && Data.includes(data.toLowerCase()) && UseWord.includes(data.toLowerCase()) == false)
+    if(!word && data.length === 3 || data.length === 3 && word[word.length -1], data[0] && Data.then((res)=> res.json()).then((ndata)=>ndata.channel.item[0].word.replace("-","")) == data)
     {
+        //데이터 대입
         flag =true;
         word = data;
         $word.textContent = data;
-        UseWord.push(data);
+
+        //순서
         const order = Number($order.textContent);
         if(order + 1>num){
             $order.textContent = 1;
@@ -64,11 +76,12 @@ const Output = () =>
     else
     {
         alert("중복 또는 잘못된 값이니다.");
+        nda
         $input.value ="";
         $input.focus();
     }
     timesec =-1;
-    
+    $output.textContent = word
 
 }
 

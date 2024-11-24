@@ -49,7 +49,7 @@ const Output = async() =>
     const Data =JSON.then((r)=>r.json());
     // Data.then(d => console.log(d.channel.item[0].word.replace("-","")));
     
-    if( !word && data.length === 3 && await Data.then(d=>d.channel.item[0].word.replace("-",""))===data|| data.length === 3 && word[word.length -1]== data[0] && await Data.then(d=>d.channel.item[0].word.replace("-","")===data))
+    if( !word && data.length === 3 && await Data.then(d=>d.channel.item[0].word.replace("-",""))===data|| data.length === 3 && await Data.then(d=>d.channel.item[0].word.replace("-","")===data) && word[word.length -1]== data[0])
     {
         timesec =-1;
         //데이터 대입
@@ -73,7 +73,7 @@ const Output = async() =>
     }
 
     
-    else if()
+    else
     {
         alert("중복 또는 잘못된 값이니다.");     
         $input.value ="";

@@ -9,15 +9,18 @@ const $time = document.querySelector("#time");
 const $output =document.querySelector('#output');
 
 
-
 let data;//현재 단어
 let word;//단어(제시어)
-let Data; //API에 들어갈 단어 변수
+ //API에 들어갈 단어 변수
 
+
+ const JSON = fetch(`http://opendict.korean.go.kr/api/search?certkey_no=4989&key=${apiKey}&target_type=search&req_type=json&part=word&q=${data}&sort=dict&start=1&num=10`);
+ const Data =JSON.then((r)=>r.json());
 //시간 설정
 let timesec=0;
 $time.textContent = timesec;
 let flag = false;
+let Be =true;
 TimeOut();
 
 //순서 문한 루프
@@ -35,28 +38,23 @@ $word.textContent = "1번째 순서입니다.";
 const inputdata = (e) =>
 {
     data= e.target.value
-    console.log(data);
-
 };
 
 
 
-const Output = () =>
+const Output = async() =>
  {
     //데이터 처리 API(우리말썜)
-    const Data = fetch(`http://opendict.korean.go.kr/api/search?certkey_no=4989&key=${apiKey}&target_type=search&req_type=json&part=word&q=${data}&sort=dict&start=1&num=10`);
-    Data.then(res => res.json())
-    .then(data => console.log(data.channel.item[0].word.replace("-","")))
-    .catch((err) => console.log(err));
-
-    let ifData = Data.then(`${data}`)
-
-
-    if(!word && data.length === 3 || data.length === 3 && word[word.length -1], data[0] && Data.then(`${data}`) == data)
+    const JSON = fetch(`http://opendict.korean.go.kr/api/search?certkey_no=4989&key=${apiKey}&target_type=search&req_type=json&part=word&q=${data}&sort=dict&start=1&num=10`);
+    const Data =JSON.then((r)=>r.json());
+    // Data.then(d => console.log(d.channel.item[0].word.replace("-","")));
+    
+    if( !word && data.length === 3 && await Data.then(d=>d.channel.item[0].word.replace("-",""))===data|| data.length === 3 && word[word.length -1]== data[0] && await Data.then(d=>d.channel.item[0].word.replace("-","")===data))
     {
+        timesec =-1;
         //데이터 대입
         flag =true;
-        word = data;
+        word = data;3
         $word.textContent = data;
 
         //순서
@@ -75,15 +73,15 @@ const Output = () =>
     }
 
     
-    else
+    else if()
     {
-        alert("중복 또는 잘못된 값이니다.");
-        nda
+        alert("중복 또는 잘못된 값이니다.");     
         $input.value ="";
         $input.focus();
     }
     timesec =-1;
-    $output.textContent = word
+
+    
 
 }
 
@@ -94,20 +92,25 @@ function TimeOut(){
         ++timesec;
         if(flag === false)
             timesec = 0;
-        $time.textContent = timesec;
 
-        if(timesec == 5)
-        {
-            setTimeout(()=>
-            {
+        if(timesec >5.)
+        {         
             alert("시간 아웃")
             $input.value ="";
             $input.focus();
-            timesec =-1;
-            },500)
-        
-    }},1000) 
+            timesec =-1;            
+        }   
+         $time.textContent = timesec;
+    },1000) 
 }
+
+
+function Auto(){
+    const JSON = fetch(`http://opendict.korean.go.kr/api/search?certkey_no=4989&key=${apiKey}&target_type=search&req_type=json&part=word&q=${data}&sort=dict&start=1&num=10`);
+    const Data =JSON.then((r)=>r.json());
+    Data.then(d=>console.log(d.channel.item[0].word.replace("-","")))
+}
+
 
 $input.addEventListener('input', inputdata);
 $btn.addEventListener('click',Output);

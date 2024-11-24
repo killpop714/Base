@@ -105,13 +105,6 @@ function TimeOut(){
 }
 
 
-function Auto(){
-    const JSON = fetch(`http://opendict.korean.go.kr/api/search?certkey_no=4989&key=${apiKey}&target_type=search&req_type=json&part=word&q=${data}&sort=dict&start=1&num=10`);
-    const Data =JSON.then((r)=>r.json());
-    Data.then(d=>console.log(d.channel.item[0].word.replace("-","")))
-}
-
-
 $input.addEventListener('input', inputdata);
 $btn.addEventListener('click',Output);
 

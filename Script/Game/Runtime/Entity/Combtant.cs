@@ -48,36 +48,13 @@ namespace Game.Battle
         [Tooltip("CoreLoss는 전체 체력 담당하고 VitalLoss는 즉사 나머지는 아이템 사용불가나 속도저하. 패널티를 없애려면 None으로 설정하세요.")]
         public Parts[] parts = new Parts[]
         {
-            new Parts{ DisplayName="Head", MaxHP=30, HP=30, Penalty=PartPenaltyType.VitalLoss,Enabled=true},
-            new Parts{ DisplayName="Trunk", MaxHP=30, HP=30, Penalty=PartPenaltyType.CoreLoss,Enabled=true},
-            new Parts{ DisplayName="Arm", MaxHP=30, HP=30, Penalty=PartPenaltyType.HandLoss,Enabled=true},
-            new Parts{ DisplayName="Leg", MaxHP=30, HP=30, Penalty=PartPenaltyType.SpeedLoss,Enabled=true}
+            new() { DisplayName="Head", MaxHP=30, HP=30, Penalty=PartPenaltyType.VitalLoss,Enabled=true},
+            new() { DisplayName="Trunk", MaxHP=30, HP=30, Penalty=PartPenaltyType.CoreLoss,Enabled=true},
+            new() { DisplayName="Arm", MaxHP=30, HP=30, Penalty=PartPenaltyType.HandLoss,Enabled=true},
+            new() { DisplayName="Leg", MaxHP=30, HP=30, Penalty=PartPenaltyType.SpeedLoss,Enabled=true}
         };
 
         public bool IsAlive => !(parts?.Any(p => p.IsBroken && (p.Penalty == PartPenaltyType.CoreLoss || p.Penalty == PartPenaltyType.VitalLoss)) ?? false);
-
-
-
-
-        public void TakeDamage(string partName, int amount)
-        {
-            var part = parts.FirstOrDefault(p => p.DisplayName == partName && p.Enabled);
-            var core = parts.FirstOrDefault(p => p.Penalty == PartPenaltyType.CoreLoss);
-            if (part == null) return;
-
-
-
-            if (part.Id == core.Id) core.HP = Mathf.Clamp(core.HP - amount, 0, core.MaxHP);
-            else part.HP = Mathf.Clamp(part.HP - amount, 0, part.MaxHP);
-
-            IsBrokenPart();
-        }
-
-        public void IsBrokenPart()
-        {
-            
-        }
-
 
     }
 }

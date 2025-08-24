@@ -8,16 +8,6 @@ namespace Game.Battle
     public class TurnRule : MonoBehaviour
     {
 
-        // class ActionDef
-        // {
-        //      public string Name;
-        //     public int Cost;         // 신호(AP) 코스트
-        //     public int MinDmg, MaxDmg;
-        //     public bool IsAttack;
-
-        //     public ActionDef(string name, int cost, int minDmg, int maxDmg, bool isAttack = true)
-        //     { Name = name; Cost = cost; MinDmg = minDmg; MaxDmg = maxDmg; IsAttack = isAttack; }
-        // }
         
 
         public UIDocument uiDocument;  // UIRoot 오브젝트에 붙은 UIDocument 할당
@@ -27,22 +17,18 @@ namespace Game.Battle
 
         int turn = 1;
 
-
-        int playerHP = 40;
-        int playerSignal = 0;
-        int playerSpead = 0;
-        public WeaponSO playerMainHand;
-        readonly public List<WeaponSO> playerPlan;
-        int enemyHP = 40;
-
-        int enemySignal = 0;
-        int enemySpeed = 0;
-        public WeaponSO enemyMainHand;
-        readonly public List<WeaponSO> enemyPlan;
+        public List<CombtantEntity> player;
+        public int playerSignal =0;
+        
 
 
-        VisualElement _root, _main, _skillPanel, _skillList;
-        Button _attackBtn, _swapBtn, _startBtn, _backBtn;
+        public List<CombtantEntity> enemy;
+        public int enemySignal = 0;
+
+
+
+        readonly VisualElement _root, _main, _skillPanel, _skillList;
+        readonly Button _attackBtn, _swapBtn, _startBtn, _backBtn;
 
 
         void Start()
@@ -83,10 +69,7 @@ namespace Game.Battle
 
         void ExcuteTurn()
         {
-            if (playerSpead < enemySpeed)
-            {
-                
-            }
+            
             // if (_plan.Count == 0)
             // {
             //     Debug.Log("담은 행동 없음");

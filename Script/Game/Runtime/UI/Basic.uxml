@@ -1,0 +1,8 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:VisualElement name="main" style="flex-grow: 1;">
+        <ui:Button text="공격" name="attackBtn" />
+        <ui:Button text="무기 변경" name="swapBtn" />
+        <ui:Button text="시작" name="startBtn" />
+        <ui:VisualElement name="actList" style="flex-grow: 1;" />
+    </ui:VisualElement>
+</ui:UXML>

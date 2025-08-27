@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 0}
-  m_Name: New Combatant
+  m_Name: Player
   m_EditorClassIdentifier: Assembly-CSharp:Game.Battle:Combatant
   DisplayName: Unit
   Team: 0

@@ -1,55 +1,60 @@
 using System;
 using System.Collections.Generic;
+using Unity.Mathematics;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Game.Battle
 {
-    public class TurnRule : MonoBehaviour
+    public class BattleRule : MonoBehaviour
     {
 
         
 
         public UIDocument uiDocument;  // UIRoot 오브젝트에 붙은 UIDocument 할당
 
-        VisualElement root, main, actList;
-        Button attackBtn, swapBtn, startBtn, backBtn;
 
+        VisualElement root, main, actList;
+        Button attackBtn, swapBtn, startBtn, backAttackBtn;
         int turn = 1;
 
         public List<CombtantEntity> player;
         public int playerSignal =0;
-        
 
+        int playerSpeed = 0;
 
         public List<CombtantEntity> enemy;
         public int enemySignal = 0;
 
 
 
-        readonly VisualElement _root, _main, _skillPanel, _skillList;
-        readonly Button _attackBtn, _swapBtn, _startBtn, _backBtn;
-
-
         void Start()
         {
             root = uiDocument.rootVisualElement;
+            //메인 조합
             main = root.Q<VisualElement>("main");
-            actList = root.Q<VisualElement>("actList");
 
             attackBtn = root.Q<Button>("attackBtn");
             swapBtn = root.Q<Button>("swapBtn");
             startBtn = root.Q<Button>("startBtn");
-            backBtn = root.Q<Button>("backBtn");
 
-            ShowMain();
+            //행동 선택 조합
+            actList = root.Q<VisualElement>("actList");
 
+            backAttackBtn = root.Q<Button>("backAttackBtn");
 
+            MainShow();
+
+            //메인 이벤트
             attackBtn.clicked += ShowActList;
             startBtn.clicked += ExcuteTurn;
+
+            //행동 선택 이벤트
+            backAttackBtn.clicked += MainShow;
             ReadyTurn();
 
-            
+            playerSpeed = UnityEngine.Random.Range(player[0].Data.minSpeed, player[0].Data.maxSpeed);
         }
 
 
@@ -104,29 +109,43 @@ namespace Game.Battle
             // NextTurn();
         }
 
-        void Enqueue()
+        void ShowActList()
         {
-            // var d = _defs[id];
-            // if (playerSignal + d.Cost > playerSpead)
-            // {
-            //     Debug.Log("신호를 넘었습니다. \n다른 기술로 넣든 아님 턴을 넘기세요.");
-            //     return;
-            // }
-            // _plan.Add(id);
-            // playerSignal += d.Cost;
+            Debug.Log("어택 눌림");
+            main.style.display = DisplayStyle.None;
+            actList.style.display = DisplayStyle.Flex;
 
-            // Debug.Log($"{d.Name}을 넣었습니다. \n현재 신호 : {playerSignal} 사용 가능 신호 : {playerSpead - playerSignal}");
+            var MainWeapon = player[0].MainWeapon;
+            foreach (var act in MainWeapon.ActList)
+            {
+                if (act == null) continue;
+
+                var b = new Button(()=>Enqueue(act))
+                {
+                    text = $"{act.name}(Signal: {act.Signal})"
+                };
+                actList.Add(b);
+            }
+        }
+
+        void Enqueue(ActionDef act)
+        {
+            if (playerSignal + act.Signal > playerSpeed)
+            {
+                Debug.Log("신호를 넘었습니다. \n다른 기술로 넣든 아님 턴을 넘기세요.");
+                return;
+            }
+            _plan.Add(id);
+            playerSignal += act.Signal;
+
+            Debug.Log($"{act.DisplayName}을 넣었습니다. \n현재 신호 : {playerSignal} 사용 가능 신호 : {playerSpeed - playerSignal}");
 
         }
-        void ShowMain()
+
+        void MainShow()
         {
             main.style.display = DisplayStyle.Flex;
             actList.style.display = DisplayStyle.None;
-        }
-        void ShowActList()
-        {
-            main.style.display = DisplayStyle.None;
-            actList.style.display = DisplayStyle.Flex;
         }
     } 
 }

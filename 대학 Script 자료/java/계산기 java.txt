@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
 
     TextView vew;
     EditText edt1, edt2;
-     Button btn1, btn2, btn3, btn4;
+     Button btn1, btn2, btn3, btn4, dlt;
      String s1, s2, ds;
      Integer var1, var2, sum;
 
@@ -43,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
         btn2 = findViewById(R.id.Btn2);
         btn3 = findViewById(R.id.Btn3);
         btn4 = findViewById(R.id.Btn4);
+        dlt = findViewById(R.id.Delete);
 
         edt1 = findViewById(R.id.Edt1);
         edt2 = findViewById(R.id.Edt2);
@@ -119,6 +120,19 @@ public class MainActivity extends AppCompatActivity {
                 }else{
                     vew.setText("값이 비었습니다.");
                 }
+            }
+        });
+
+        dlt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                edt1.setText("");
+                edt2.setText("");
+                edt1.setHint("첫번째 숫자");
+                edt1.setGravity(Gravity.CENTER);
+                edt2.setHint("두번째 숫자");
+                edt2.setGravity(Gravity.CENTER);
+                vew.setText("결과:");
             }
         });
 

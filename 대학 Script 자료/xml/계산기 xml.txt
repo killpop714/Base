@@ -67,6 +67,14 @@
         />
     </LinearLayout>
 
+    <Button
+        android:id="@+id/Delete"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="제거"
+        android:textSize="20dp"
+        />
+
 
 
 
@@ -75,7 +83,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="30sp"
-        android:text="결과"
+        android:text="결과:"
         android:gravity="start"
         android:textColor="#FF0000"
         />

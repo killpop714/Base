@@ -1,7 +1,7 @@
 using UnityEngine;
 
 
-public enum ActTag { None, Attack, Defense, Swap}
+public enum ActTag { None, Attack, Defense,Use ,Swap}
 
 public interface IAction
 {
@@ -10,6 +10,7 @@ public interface IAction
     int Signal { get; }
     int MinValue { get; }
     int MaxValue { get; }
+    int Damage { get; }
 }
 
 [CreateAssetMenu(menuName = "Battle/Act", fileName = "NewAct")]
@@ -20,6 +21,8 @@ public class ActionDef : ScriptableObject, IAction
     [SerializeField] int signal = 1;
     [SerializeField] int minValue = 10;
     [SerializeField] int maxValue = 10;
+
+    [SerializeField] int damage = 10;
    
 
     public string DisplayName => displayName;
@@ -27,5 +30,6 @@ public class ActionDef : ScriptableObject, IAction
     public int Signal => signal;
     public int MinValue => minValue;
     public int MaxValue => maxValue;
+    public int Damage => damage;    
 
 }

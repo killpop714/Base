@@ -9,22 +9,22 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
-  m_Name: enemy
-  m_EditorClassIdentifier: Assembly-CSharp:Game.Battle:Combatant
+  m_Script: {fileID: 11500000, guid: 7feb2c5dff0ccc14cb5e536ff149db04, type: 3}
+  m_Name: Enemy
+  m_EditorClassIdentifier: Assembly-CSharp::Game.Battle.Combatant
   DisplayName: Unit
   Team: 0
-  MinSpeed: 0
-  MaxSpeed: 0
+  MinSpeed: 3
+  MaxSpeed: 3
   parts:
   - DisplayName: Head
-    Id: Id
+    Id: enemyHead
     MaxHP: 30
     HP: 30
     Enabled: 1
     Penalty: 2
   - DisplayName: Trunk
-    Id: Id
+    Id: enemyTrnck
     MaxHP: 30
     HP: 30
     Enabled: 1

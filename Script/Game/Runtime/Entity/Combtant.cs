@@ -7,30 +7,8 @@ using UnityEngine;
 
 namespace Game.Battle
 {
-
     // 팀 구분
     public enum Team { Player, Enemy }
-
-
-    //부위 파괴시 패널티
-    public enum PartPenaltyType { None, CoreLoss, VitalLoss, SpeedLoss, HandLoss }
-    // 부위별 HP 컨테이너
-    [Serializable]
-    public class Parts
-    {
-        public string DisplayName = "Part";
-        [Tooltip("아이디는 특정 개체를 참조하기 위해서 쓰이니 전부 다르게 이름을 지어주세요")]
-        public string Id = "Id";
-        [Min(1)] public int MaxHP = 20;
-
-        public int HP = 20;
-        public bool Enabled = true; // 부위 사용/미사용 토글
-
-        public void Clamp() => HP = Mathf.Clamp(HP, 0, MaxHP);
-        public PartPenaltyType Penalty = PartPenaltyType.None;
-        public bool IsBroken => Enabled && HP <= 0;
-
-    }
 
     [CreateAssetMenu(menuName = "Battle/Unit")]
     public class Combatant : ScriptableObject
@@ -43,8 +21,8 @@ namespace Game.Battle
         [SerializeField] int MinSpeed = 0;
         [SerializeField] int MaxSpeed = 0;
 
-         public int minSpeed => MinSpeed;
-         public int maxSpeed => MaxSpeed;
+        public int minSpeed => MinSpeed;
+        public int maxSpeed => MaxSpeed;
 
 
         [Header("Body Parts (Optional)")]
@@ -57,7 +35,8 @@ namespace Game.Battle
             new() { DisplayName="Leg", MaxHP=30, HP=30, Penalty=PartPenaltyType.SpeedLoss,Enabled=true}
         };
 
-        public bool IsAlive => !(parts?.Any(p => p.IsBroken && (p.Penalty == PartPenaltyType.CoreLoss || p.Penalty == PartPenaltyType.VitalLoss)) ?? false);
+        
+       // public bool IsAlive => !(parts?.Any(p => p.IsBroken && (p.Penalty == PartPenaltyType.CoreLoss || p.Penalty == PartPenaltyType.VitalLoss)) ?? false);
 
     }
 }

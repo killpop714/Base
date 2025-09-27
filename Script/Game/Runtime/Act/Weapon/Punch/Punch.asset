@@ -16,3 +16,4 @@ MonoBehaviour:
   id: punch
   ActList:
   - {fileID: 11400000, guid: cb6639e71017ee7408648246744e6c38, type: 2}
+  - {fileID: 11400000, guid: 0627990dd5dd1954781a27c8fd1bbc75, type: 2}

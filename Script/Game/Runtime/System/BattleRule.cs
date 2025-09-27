@@ -1,32 +1,37 @@
-using System;
 using System.Collections.Generic;
-using Unity.Mathematics;
-using Unity.VisualScripting;
+
+
 using UnityEngine;
 using UnityEngine.UIElements;
+
 
 namespace Game.Battle
 {
     public class BattleRule : MonoBehaviour
     {
+        //턴 정보
+        public enum TurnState { PlayerTurn, EnemyTurn}
+        public TurnState currentTurn;
+        public int turn = 1;
 
-        
 
+        //UI 정보
         public UIDocument uiDocument;  // UIRoot 오브젝트에 붙은 UIDocument 할당
-
-
         VisualElement root, main, actList;
         Button attackBtn, swapBtn, startBtn, backAttackBtn;
-        int turn = 1;
 
-        public List<CombtantEntity> player;
-        public int playerSignal =0;
 
+        //플레이어 정보
         int playerSpeed = 0;
+        public int playerSignal = 0;
+        public List<CombtantEntity> player;
+        public List<ActionDef> playerPlan;
 
-        public List<CombtantEntity> enemy;
+        //적 정보
+        int enemySpeed = 0;
         public int enemySignal = 0;
-
+        public List<CombtantEntity> enemy;
+        public List<ActionDef> enemyPlan;
 
 
         void Start()
@@ -44,7 +49,8 @@ namespace Game.Battle
 
             backAttackBtn = root.Q<Button>("backAttackBtn");
 
-            MainShow();
+            //전체 UI 조작
+            //MainShow();
 
             //메인 이벤트
             attackBtn.clicked += ShowActList;
@@ -52,12 +58,19 @@ namespace Game.Battle
 
             //행동 선택 이벤트
             backAttackBtn.clicked += MainShow;
+
+
+            //시작 세팅
             ReadyTurn();
 
-            playerSpeed = UnityEngine.Random.Range(player[0].Data.minSpeed, player[0].Data.maxSpeed);
+            playerSpeed = Random.Range(player[0].Data.minSpeed, player[0].Data.maxSpeed);
+            enemySpeed = Random.Range(enemy[0].Data.minSpeed, enemy[0].Data.maxSpeed);
+            Debug.Log(playerSpeed);
+            Debug.Log(enemySpeed);
+
         }
 
-
+        //기본 턴 시스템
         void ReadyTurn()
         {
             playerSignal = 0;
@@ -71,49 +84,92 @@ namespace Game.Battle
             ++turn;
             ReadyTurn();
         }
+        void EndTurn()
+        {
+            Debug.Log($"적 사망 시각: {turn} 이다");
+        }
 
+        //전투 턴 시스템
         void ExcuteTurn()
         {
-            
-            // if (_plan.Count == 0)
-            // {
-            //     Debug.Log("담은 행동 없음");
-            //     NextTurn();
-            //     return;
-            // }
+            //확률로 선공 후공 정하기
+            RTurn();
 
-            // var copy = new List<Act>(_plan);
+            while (true)
+            {
+                Debug.Log(enemy[0].Data.parts[0].HP);
+                //조건문으로 속도 확인
+                if (currentTurn == TurnState.PlayerTurn)
+                {
+                    //플랜에 아무것도 없을 경우
+                    if (playerPlan.Count == 0)
+                    {
+                        Debug.Log("값이 없으므로 상대에게 턴을 넘깁니다.");
+                    }
 
-            // foreach (var id in copy)
-            // {
-            //     var d = _defs[id];
+                    //공격일 경우
+                    else if (playerPlan[0].Tag==ActTag.Attack)
+                    {
+                        Debug.Log($"플레이어가 적 공격:{playerPlan[0].Damage}");
+                        enemy[0].TakeDamage("Head", playerPlan[0].Damage);
+                        playerPlan.RemoveAt(0);
 
-            //     if (d.IsAttack)
-            //     {
-            //         int dmg = Random.Range(d.MinDmg, d.MaxDmg + 1);
-            //         enemyHP = Mathf.Max(0, enemyHP - dmg);
-            //         Debug.Log($"✅ {d.Name}: {dmg} 피해 → 적 HP {enemyHP}");
-            //         if (enemyHP <= 0)
-            //         {
-            //             Debug.Log("🎉 적 격파! 전투 종료");
-            //             _plan.Clear();
-            //             return;
-            //         }
-            //     }
-            //     else
-            //     {
-            //         Debug.Log($"🔁 {d.Name} 처리(데모: 효과 없음)");
-            //     }
-            // }
-            // _plan.Clear();
-            // NextTurn();
+                        Debug.Log(enemy[0].runtimeParts[0].HP);
+
+                    }
+
+                    //방어일 경우
+                    else if (playerPlan[0].Tag == ActTag.Defense)
+                    {
+                        Debug.Log($"방어 버림");
+                        playerPlan.RemoveAt(0);
+
+                    }
+                }
+                else if(currentTurn == TurnState.EnemyTurn)
+                {
+                    if (enemyPlan.Count == 0)
+                    {
+                        Debug.Log("값이 없으므로 상대에게 턴을 넘깁니다.");
+                    }
+                    else if(playerPlan[0].Tag == ActTag.Attack)
+                    {
+                        player[0].TakeDamage("Head", enemyPlan[0].Damage);
+                        enemyPlan.RemoveAt(0);
+
+                    }
+                    //방어일 경우
+                    else if (playerPlan[0].Tag == ActTag.Defense)
+                    {
+                        Debug.Log($"방어 버림");
+                        playerPlan.RemoveAt(0);
+
+                    }
+                }
+
+                if (!player[0].IsAlive || !enemy[0].IsAlive)
+                {
+                    EndTurn();
+                    break;
+                }
+                //enemy나 player의 플랜이 없을시 턴 종료
+                else if (playerPlan.Count == 0 && enemyPlan.Count == 0)
+                {
+                    Debug.Log("다음턴으로 갑니다");
+                    NextTurn();
+                    break;
+                }
+
+            }
         }
 
         void ShowActList()
         {
-            Debug.Log("어택 눌림");
             main.style.display = DisplayStyle.None;
             actList.style.display = DisplayStyle.Flex;
+
+            //리스트 초기화
+            actList.Clear();
 
             var MainWeapon = player[0].MainWeapon;
             foreach (var act in MainWeapon.ActList)
@@ -126,6 +182,7 @@ namespace Game.Battle
                 };
                 actList.Add(b);
             }
+            actList.Add(backAttackBtn);
         }
 
         void Enqueue(ActionDef act)
@@ -135,10 +192,16 @@ namespace Game.Battle
                 Debug.Log("신호를 넘었습니다. \n다른 기술로 넣든 아님 턴을 넘기세요.");
                 return;
             }
-            _plan.Add(id);
+
+            playerPlan.Add(act);
             playerSignal += act.Signal;
 
             Debug.Log($"{act.DisplayName}을 넣었습니다. \n현재 신호 : {playerSignal} 사용 가능 신호 : {playerSpeed - playerSignal}");
+
+        }
+
+        void EnemyAiEnqueue()
+        {
 
         }
 
@@ -146,6 +209,24 @@ namespace Game.Battle
         {
             main.style.display = DisplayStyle.Flex;
             actList.style.display = DisplayStyle.None;
+        }
+
+        void RTurn()
+        {
+            int totalSpeed = playerSpeed + enemySpeed;
+
+            int roll = Random.Range(0, totalSpeed);
+
+            if (roll < playerSpeed) 
+            {
+                Debug.Log("player 먼저");
+                currentTurn = TurnState.PlayerTurn;
+            }
+            else
+            {
+                Debug.Log("enemy 먼저");
+                currentTurn = TurnState.EnemyTurn;
+            }
         }
     } 
 }

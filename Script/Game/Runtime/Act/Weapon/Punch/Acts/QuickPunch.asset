@@ -12,8 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c0fbcf6940d7f284d9354b5ce35804ec, type: 3}
   m_Name: QuickPunch
   m_EditorClassIdentifier: Assembly-CSharp::ActionDef
-  displayName: Act
+  displayName: QuickPunch
   tag: 1
   signal: 1
   minValue: 10
   maxValue: 10
+  damage: 10

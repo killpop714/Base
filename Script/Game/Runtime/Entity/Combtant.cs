@@ -14,7 +14,6 @@ namespace Game.Battle
     public class Combatant : ScriptableObject
     {
         public string DisplayName = "Unit";
-        public Team Team = Team.Player;
 
         [Header("Speed 스탯")]
         [Tooltip("최소값과 최대값은 신호값의 랜덤값을 돌릴때 사용됩니다.")]

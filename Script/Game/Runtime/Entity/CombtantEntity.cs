@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿
+
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,24 +13,16 @@ namespace Game.Battle
         public Combatant Data;
         public WeaponSO MainWeapon;
         public Parts[] runtimeParts;
+        public Team team;
 
 
 
 
         private void Awake()
         {
-            if (Data == null)
-            {
-                Debug.LogError("Data가 할당되지 않았습니다!");
-                return;
-            }
+            //엔티티의 기본 정보들을 runtime에 굴러가게 생성
 
-            if (Data.parts == null)
-            {
-                Debug.LogError("Data.parts가 비어 있습니다!");
-                return;
-            }
-            //runtimeParts를 세팅
+            //엔티티의 파트들의 정보들을 runtime에 굴러가게 생성
             runtimeParts = Data.parts.Select(p => new Parts
             {
                 DisplayName = p.DisplayName,
@@ -40,6 +32,8 @@ namespace Game.Battle
                 Enabled = p.Enabled,
                 Penalty = p.Penalty
             }).ToArray();
+
+            
         }
 
         public bool IsAlive =>
@@ -71,6 +65,13 @@ namespace Game.Battle
             IsBrokenPart(part);
         }
 
+        //속도가 최소치와 최대치를 랜덤하게 구하는 함수
+        public int GetSpeed()
+        {
+            return Random.Range(Data.minSpeed, Data.maxSpeed);
+        }
+
+        //파트가 부서질때 주어지는 패널티
         public void IsBrokenPart(Parts part)
         {
             if (part.HP == 0)

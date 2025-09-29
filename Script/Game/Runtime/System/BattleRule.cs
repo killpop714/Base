@@ -1,6 +1,5 @@
 using System.Collections.Generic;
-
-
+using UnityEditor.UI;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -25,14 +24,10 @@ namespace Game.Battle
 
 
         //플레이어 정보
-        int playerSpeed = 0;
-        public int playerSignal = 0;
         public List<CombtantEntity> player;
         public List<ActionDef> playerPlan;
 
         //적 정보
-        int enemySpeed = 0;
-        public int enemySignal = 0;
         public List<CombtantEntity> enemy;
         public List<ActionDef> enemyPlan;
 
@@ -65,22 +60,20 @@ namespace Game.Battle
 
             //시작 세팅
             ReadyTurn();
-
-            playerSpeed = player[0].GetSpeed();
-            enemySpeed = enemy[0].GetSpeed();
-            Debug.Log(playerSpeed);
-            Debug.Log(enemySpeed);
-
         }
 
         //기본 턴 시스템
         void ReadyTurn()
         {
-            playerSignal = 0;
+            player[0].RSetSpeed();
+            enemy[0].RSetSpeed();
+
+            player[0].signal = 0;
+
             EnemyAiEnqueue();
 
             Debug.Log($"현재 턴 : {turn}");
-            Debug.Log($"[플레이어 턴 시작] AP: {playerSignal}");
+            Debug.Log($"[플레이어 턴 시작] AP: {player[0].signal}");
         }
         void NextTurn()
         {
@@ -97,71 +90,63 @@ namespace Game.Battle
         {
             //확률로 선공 후공 정하기
             RTurn();
-            //Debug.Log(player[0].Data.Team);
+
+
+
             while (true)
             {
-                //조건문으로 속도 확인
-                if (currentTurn == TurnState.PlayerTurn)
+                //튜플 반환식으로 선공 객체와 후공 객체를 구분
+                var (self, target) = GetTurnEntites();
+
+
+                //플랜에 아무것도 없을 경우
+                if (self[0].plans.Count == 0)
                 {
-                    //플랜에 아무것도 없을 경우
-                    if (playerPlan.Count == 0)
-                    {
-                        Debug.Log("값이 없으므로 상대에게 선공을 넘깁니다.");
-                        currentTurn = TurnState.EnemyTurn;
-                    }
-                    //공격일 경우
-                    else if (playerPlan[0].Tag==ActTag.Attack)
-                    {
-                        // 적의 공격 플랜을 모두 버린다
-                        while (enemyPlan.Count > 0 && enemyPlan[0].Tag == ActTag.Attack)
-                        {
-                            enemyPlan.RemoveAt(0);
-                        }
-
-                        Debug.Log($"플레이어가 적 공격:{playerPlan[0].Damage}");
-                        enemy[0].TakeDamage("Head", playerPlan[0].Damage);
-                        playerPlan.RemoveAt(0);
-
-                        Debug.Log(enemy[0].runtimeParts[0].HP);
-
-                    }
-                    //방어일 경우
-                    else if (playerPlan[0].Tag == ActTag.Defense)
-                    {
-                        Debug.Log($"방어 버림");
-                        playerPlan.RemoveAt(0);
-
-                    }
+                    Debug.Log("값이 없으므로 상대에게 선공을 넘깁니다.");
+                    currentTurn = TurnState.EnemyTurn;
                 }
-                else if(currentTurn == TurnState.EnemyTurn)
+                else
                 {
-                    if (enemyPlan.Count == 0)
-                    {
-                        Debug.Log("값이 없으므로 상대에게 턴을 넘깁니다.");
-                        currentTurn = TurnState.PlayerTurn;
-                    }
-                    else if(enemyPlan[0].Tag == ActTag.Attack)
-                    {
-                        player[0].TakeDamage("Head", enemyPlan[0].Damage);
-                        enemyPlan.RemoveAt(0);
 
-                    }
-                    //방어일 경우
-                    else if (enemyPlan[0].Tag == ActTag.Defense)
+                    var selfPlan = self[0].plans[0];
+                    self[0].plans.RemoveAt(0);
+
+                    switch (selfPlan.Tag)
                     {
-                        Debug.Log($"방어 버림");
-                        playerPlan.RemoveAt(0);
+                        case ActTag.Attack:
+
+                            while (target[0].plans.Count > 0)
+                            {
+                                var targetPlan = target[0].plans[0];
+
+                                if (targetPlan.Tag == ActTag.Defense)
+                                {
+                                    target[0].TakeDamage("Head", selfPlan.RGetDamage());
+                                    break;
+                                }
+
+                                if (targetPlan.Tag == ActTag.Attack)                                    
+                                    target[0].plans.RemoveAt(0);
+                                else
+                                    break;
+                            }
+                            break;
+
+                        case ActTag.Defense:
+                            Debug.Log("방어 버림");
+                            self[0].plans.RemoveAt(0);
+                            break;
 
                     }
                 }
 
-                if (!player[0].IsAlive || !enemy[0].IsAlive)
+                if (!self[0].IsAlive || !target[0].IsAlive)
                 {
                     EndTurn();
                     break;
                 }
                 //enemy나 player의 플랜이 없을시 턴 종료
-                else if (playerPlan.Count == 0 && enemyPlan.Count == 0)
+                else if (self[0].plans.Count == 0 && target[0].plans.Count == 0)
                 {
                     Debug.Log("다음턴으로 갑니다");
                     NextTurn();
@@ -197,76 +182,27 @@ namespace Game.Battle
         }
 
         //댁을 넣는 조건문 함수
-        void Enqueue(ActionDef act, CombtantEntity CheckEntity)
+        void Enqueue(ActionDef act, CombtantEntity Actor)
         {
-            if (CheckEntity.team == Team.Player)
+
+            if (Actor.team == Team.Player)
             {
-                if (playerSignal + act.Signal > playerSpeed)
+                if (Actor.signal + act.Signal > Actor.speed)
                 {
                     Debug.Log("신호를 넘었습니다. \n다른 기술로 넣든 아님 턴을 넘기세요.");
                     return;
                 }
 
-                playerPlan.Add(act);
-                playerSignal += act.Signal;
+                Actor.plans.Add(act);
+                Actor.signal += act.Signal;
 
-                Debug.Log($"{act.DisplayName}을 넣었습니다. \n현재 신호 : {playerSignal} 사용 가능 신호 : {playerSpeed - playerSignal}");
+                Debug.Log($"{act.DisplayName}을 넣었습니다. \n현재 신호 : {Actor.signal} 사용 가능 신호 : {Actor.speed - Actor.signal}");
             }
-            else if (CheckEntity.team == Team.Enemy)
-            {
-                if (enemySignal + act.Signal > enemySpeed)
-                {
-                    Debug.Log("신호를 넘었습니다. \n다른 기술로 넣든 아님 턴을 넘기세요.");
-                    return;
-                }
-
-                enemyPlan.Add(act);
-                enemySignal += act.Signal;
-
-                Debug.Log($"{act.DisplayName}을 넣었습니다. \n현재 신호 : {enemySignal} 사용 가능 신호 : {enemySpeed - enemySignal}");
-            }
-
         }
 
         //적 ai가 댁을 짜는 함수
         void EnemyAiEnqueue()
         {
-            var enemyEntity = enemy[0]; // 지금은 적 1명만 있다고 가정
-            var actList = enemyEntity.MainWeapon.ActList;
-
-            enemyPlan.Clear();   // 이전 턴의 계획 초기화
-            enemySignal = 0;
-
-            // 적이 덱을 짜는 루프
-            while (true)
-            {
-                // 현재 신호가 속도를 초과할 경우 중단
-                if (enemySignal >= enemySpeed)
-                    break;
-
-                // 가능한 액션들만 필터링 (null 제외, Signal 초과하지 않는 것만)
-                var availableActs = new List<ActionDef>();
-                foreach (var act in actList)
-                {
-                    if (act == null) continue;
-                    if (enemySignal + act.Signal <= enemySpeed)
-                        availableActs.Add(act);
-                }
-
-                // 선택 가능한 액션이 없으면 중단
-                if (availableActs.Count == 0)
-                    break;
-
-                // 랜덤으로 하나 골라 Enqueue
-                var choice = availableActs[Random.Range(0, availableActs.Count)];
-                Enqueue(choice, enemyEntity);
-
-                // 랜덤으로 "행동 종료" 시도 (덱을 꼭 꽉 채우지 않도록)
-                if (Random.value < 0.3f) // 30% 확률로 멈춤
-                    break;
-            }
-
-            Debug.Log("Enemy Plan 준비 완료");
         }
 
         void MainShow()
@@ -279,13 +215,13 @@ namespace Game.Battle
         void RTurn()
         {
             //먼저 이둘의 전체 스피드 값을 구하고
-            int totalSpeed = playerSpeed + enemySpeed;
+            int totalSpeed = player[0].speed + enemy[0].speed;
 
             //그 값을 Range에 넣고는 그 사이 값이 나오게 한 다음
             int roll = Random.Range(0, totalSpeed);
 
             //여기 조건문에서 roll 값이 플레이어 또는 적의 값에 조건이 됬을경우 그 대상이 선이 된다. 물론 선공 후공은 Excute함수에 넣었지만.
-            if (roll < playerSpeed) 
+            if (roll < player[0].speed) 
             {
                 Debug.Log("player 먼저");
                 currentTurn = TurnState.PlayerTurn;
@@ -295,6 +231,16 @@ namespace Game.Battle
                 Debug.Log("enemy 먼저");
                 currentTurn = TurnState.EnemyTurn;
             }
+        }
+
+        private (List<CombtantEntity> self, List<CombtantEntity> target) GetTurnEntites()
+        {
+            if (currentTurn == TurnState.PlayerTurn)
+                return (player, enemy);
+            else
+                return (enemy, player);
+
+
         }
     } 
 }

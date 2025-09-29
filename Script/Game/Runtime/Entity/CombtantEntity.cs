@@ -1,5 +1,8 @@
 ﻿
 
+using Game.Battle;
+using NUnit.Framework;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -7,6 +10,11 @@ using UnityEngine;
 
 namespace Game.Battle
 {
+    // 팀 구분
+    public enum Team { Player, Enemy }
+
+    
+
     public class CombtantEntity : MonoBehaviour
     {
         [Tooltip("이 캐릭터의 데이터")]
@@ -14,6 +22,10 @@ namespace Game.Battle
         public WeaponSO MainWeapon;
         public Parts[] runtimeParts;
         public Team team;
+        public List<ActionDef> plans;
+        public int speed;
+        public int signal;
+
 
 
 
@@ -32,6 +44,8 @@ namespace Game.Battle
                 Enabled = p.Enabled,
                 Penalty = p.Penalty
             }).ToArray();
+
+
 
             
         }
@@ -66,9 +80,9 @@ namespace Game.Battle
         }
 
         //속도가 최소치와 최대치를 랜덤하게 구하는 함수
-        public int GetSpeed()
+        public void RSetSpeed()
         {
-            return Random.Range(Data.minSpeed, Data.maxSpeed);
+            speed = Random.Range(Data.minSpeed, Data.maxSpeed);
         }
 
         //파트가 부서질때 주어지는 패널티

@@ -7,9 +7,6 @@ using UnityEngine;
 
 namespace Game.Battle
 {
-    // 팀 구분
-    public enum Team { Player, Enemy }
-
     [CreateAssetMenu(menuName = "Battle/Unit")]
     public class Combatant : ScriptableObject
     {

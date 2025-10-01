@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEditor.UI;
 using UnityEngine;
@@ -99,39 +100,72 @@ namespace Game.Battle
                 var (self, target) = GetTurnEntites();
 
 
-                //플랜에 아무것도 없을 경우
+                //플랜에 값이 없을때 공수교대를 합니다
                 if (self[0].plans.Count == 0)
                 {
                     Debug.Log("값이 없으므로 상대에게 선공을 넘깁니다.");
-                    currentTurn = TurnState.EnemyTurn;
+                    Debug.Log(currentTurn);
+                    currentTurn = currentTurn == TurnState.PlayerTurn ? TurnState.EnemyTurn : TurnState.PlayerTurn;
+                    (self, target) = GetTurnEntites();
+
+                    Debug.Log(currentTurn);
+                    //다음 self도 값이 없을 시 턴을 넘김
+                    if (self[0].plans.Count == 0)
+                    {
+                        Debug.Log("둘다 값이 없으니 턴을 종료합니다");
+                        NextTurn();
+                        break;
+                    }
+                    
+                 
                 }
                 else
                 {
 
                     var selfPlan = self[0].plans[0];
-                    self[0].plans.RemoveAt(0);
 
                     switch (selfPlan.Tag)
                     {
+                        //self의 plan이 공격 태그일 경우
                         case ActTag.Attack:
 
-                            while (target[0].plans.Count > 0)
+                            while (true)
                             {
-                                var targetPlan = target[0].plans[0];
-
-                                if (targetPlan.Tag == ActTag.Defense)
+                                try
                                 {
-                                    target[0].TakeDamage("Head", selfPlan.RGetDamage());
+                                    var targetPlan = target[0].plans[0];
+
+                                    if (targetPlan.Tag == ActTag.Defense)
+                                    {
+                                        int damage = selfPlan.RGetDamage() / 10;
+
+                                        
+
+                                        target[0].TakeDamage("Head", damage);
+                                        Debug.Log($"{target[0].Data.DisplayName}이 {target[0].runtimeParts[0].DisplayName}에 {damage}만큼 대미지를 줬다");
+                                        target[0].plans.RemoveAt(0);
+                                        self[0].plans.RemoveAt(0);
+                                        break;
+                                    }
+
+                                    else if (targetPlan.Tag == ActTag.Attack)
+                                    {
+                                        Debug.Log("상대 공격 버림");
+                                        target[0].plans.RemoveAt(0);
+                                    }
+                                }
+                                //targetPlan의 첫 값이 아예 없을때 예외 처리
+                                catch (ArgumentException)
+                                {
+                                    int damage = selfPlan.RGetDamage();
+                                    target[0].TakeDamage("Head", damage);
+                                    Debug.Log($"{target[0].Data.DisplayName}이 {target[0].runtimeParts[0].DisplayName}에 {damage}만큼 대미지를 줬다");
+                                    self[0].plans.RemoveAt(0);
                                     break;
                                 }
-
-                                if (targetPlan.Tag == ActTag.Attack)                                    
-                                    target[0].plans.RemoveAt(0);
-                                else
-                                    break;
                             }
                             break;
-
+                        //self의 plan이 방어 태그일 경우
                         case ActTag.Defense:
                             Debug.Log("방어 버림");
                             self[0].plans.RemoveAt(0);
@@ -203,6 +237,100 @@ namespace Game.Battle
         //적 ai가 댁을 짜는 함수
         void EnemyAiEnqueue()
         {
+            // 1. 적 엔티티 및 기본 정보 확인
+            if (enemy == null || enemy.Count == 0 || enemy[0] == null || enemy[0].MainWeapon == null)
+            {
+                Debug.LogError("적 엔티티 또는 무기 정보가 유효하지 않습니다. AI 턴을 건너뜝니다.");
+                return;
+            }
+
+            CombtantEntity Actor = enemy[0];
+
+            // 이전 계획 및 시그널 초기화
+            Actor.plans.Clear();
+            Actor.signal = 0;
+
+            // 2. 공격과 방어 행동 목록 필터링
+            List<ActionDef> attackActions = new List<ActionDef>();
+            List<ActionDef> defenseActions = new List<ActionDef>();
+
+            if (Actor.MainWeapon.ActList != null)
+            {
+                foreach (var act in Actor.MainWeapon.ActList)
+                {
+                    if (act == null) continue;
+
+                    if (act.Tag == ActTag.Attack)
+                    {
+                        attackActions.Add(act);
+                    }
+                    else if (act.Tag == ActTag.Defense)
+                    {
+                        defenseActions.Add(act);
+                    }
+                }
+            }
+
+            if (attackActions.Count == 0)
+            {
+                Debug.LogWarning("적에게 사용할 수 있는 공격 행동이 없습니다.");
+            }
+
+            // 3. 남은 Signal이 허용하는 한 행동을 무작위로 추가
+            while (true)
+            {
+                int remainingSignal = Actor.speed - Actor.signal;
+
+                // 실행 가능한 공격 및 방어 행동 리스트 준비
+                List<ActionDef> affordableAttack = attackActions
+                    .FindAll(act => act.Signal <= remainingSignal);
+
+                List<ActionDef> affordableDefense = defenseActions
+                    .FindAll(act => act.Signal <= remainingSignal);
+
+                // 더 이상 아무 행동도 할 수 없으면 종료
+                if (affordableAttack.Count == 0 && affordableDefense.Count == 0)
+                {
+                    break;
+                }
+
+                ActionDef selectedAct = null;
+
+                // 행동 선택 로직: 25% 확률로 방어, 75% 확률로 공격 (방어가 없거나 Signal이 안되면 공격)
+                int roll = UnityEngine.Random.Range(0, 100);
+
+                if (roll < 25 && affordableDefense.Count > 0) // 25% 확률로 방어 선택 시도
+                {
+                    // 실행 가능한 방어 행동 중 무작위 선택
+                    int randomIndex = UnityEngine.Random.Range(0, affordableDefense.Count);
+                    selectedAct = affordableDefense[randomIndex];
+                    Debug.Log("적 AI: 방어 행동을 선택했습니다.");
+                }
+                else if (affordableAttack.Count > 0) // 75% 확률 또는 방어 불가 시 공격 선택
+                {
+                    // 실행 가능한 공격 행동 중 무작위 선택
+                    int randomIndex = UnityEngine.Random.Range(0, affordableAttack.Count);
+                    selectedAct = affordableAttack[randomIndex];
+                    Debug.Log("적 AI: 공격 행동을 선택했습니다.");
+                }
+                else if (affordableDefense.Count > 0) // 공격도 불가능한데 방어는 가능하다면 방어
+                {
+                    int randomIndex = UnityEngine.Random.Range(0, affordableDefense.Count);
+                    selectedAct = affordableDefense[randomIndex];
+                    Debug.Log("적 AI: 공격 불가로 방어 행동을 선택했습니다.");
+                }
+                else
+                {
+                    // 모든 행동이 Signal 한도 초과
+                    break;
+                }
+
+                // 선택된 행동 큐에 추가 및 Signal 업데이트
+                Actor.plans.Add(selectedAct);
+                Actor.signal += selectedAct.Signal;
+
+                Debug.Log($"적 AI: {selectedAct.DisplayName}을(를) 계획에 추가. 현재 신호: {Actor.signal}/{Actor.speed}");
+            }
         }
 
         void MainShow()
@@ -218,7 +346,7 @@ namespace Game.Battle
             int totalSpeed = player[0].speed + enemy[0].speed;
 
             //그 값을 Range에 넣고는 그 사이 값이 나오게 한 다음
-            int roll = Random.Range(0, totalSpeed);
+            int roll = UnityEngine.Random.Range(0, totalSpeed);
 
             //여기 조건문에서 roll 값이 플레이어 또는 적의 값에 조건이 됬을경우 그 대상이 선이 된다. 물론 선공 후공은 Excute함수에 넣었지만.
             if (roll < player[0].speed) 

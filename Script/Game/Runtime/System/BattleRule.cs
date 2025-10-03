@@ -12,6 +12,9 @@ namespace Game.Battle
         //참조 정보
         public Combatant Combatant;
 
+        //배경 패시브 정보
+        public PassiveRule passiveRule;
+
         //턴 정보
         public enum TurnState { PlayerTurn, EnemyTurn}
         public TurnState currentTurn;
@@ -26,11 +29,9 @@ namespace Game.Battle
 
         //플레이어 정보
         public List<CombtantEntity> player;
-        public List<ActionDef> playerPlan;
 
         //적 정보
         public List<CombtantEntity> enemy;
-        public List<ActionDef> enemyPlan;
 
 
         void Start()
@@ -53,18 +54,18 @@ namespace Game.Battle
 
             //메인 이벤트
             attackBtn.clicked += ShowActList;
-            startBtn.clicked += ExcuteTurn;
+            startBtn.clicked += ExecuteTurn;
 
             //행동 선택 이벤트
             backAttackBtn.clicked += MainShow;
 
 
             //시작 세팅
-            ReadyTurn();
+            StartTurn();
         }
 
         //기본 턴 시스템
-        void ReadyTurn()
+        void StartTurn()
         {
             player[0].RSetSpeed();
             enemy[0].RSetSpeed();
@@ -76,10 +77,9 @@ namespace Game.Battle
             Debug.Log($"현재 턴 : {turn}");
             Debug.Log($"[플레이어 턴 시작] AP: {player[0].signal}");
         }
-        void NextTurn()
+        void NextReadyTurn()
         {
             ++turn;
-            ReadyTurn();
         }
         void EndTurn()
         {
@@ -87,7 +87,7 @@ namespace Game.Battle
         }
 
         //전투 턴 시스템
-        void ExcuteTurn()
+        void ExecuteTurn()
         {
             //확률로 선공 후공 정하기
             RTurn();
@@ -104,16 +104,15 @@ namespace Game.Battle
                 if (self[0].plans.Count == 0)
                 {
                     Debug.Log("값이 없으므로 상대에게 선공을 넘깁니다.");
-                    Debug.Log(currentTurn);
+                    //공수교대
                     currentTurn = currentTurn == TurnState.PlayerTurn ? TurnState.EnemyTurn : TurnState.PlayerTurn;
                     (self, target) = GetTurnEntites();
 
-                    Debug.Log(currentTurn);
                     //다음 self도 값이 없을 시 턴을 넘김
                     if (self[0].plans.Count == 0)
                     {
                         Debug.Log("둘다 값이 없으니 턴을 종료합니다");
-                        NextTurn();
+                        NextReadyTurn();
                         break;
                     }
                     
@@ -139,9 +138,12 @@ namespace Game.Battle
                                     {
                                         int damage = selfPlan.RGetDamage() / 10;
 
+                                        PassiveRule rule = new();
+
+                                        target[0].TakeDamage(target[0].runtimeParts[0], damage);
+                                       
                                         
 
-                                        target[0].TakeDamage("Head", damage);
                                         Debug.Log($"{target[0].Data.DisplayName}이 {target[0].runtimeParts[0].DisplayName}에 {damage}만큼 대미지를 줬다");
                                         target[0].plans.RemoveAt(0);
                                         self[0].plans.RemoveAt(0);
@@ -158,7 +160,7 @@ namespace Game.Battle
                                 catch (ArgumentException)
                                 {
                                     int damage = selfPlan.RGetDamage();
-                                    target[0].TakeDamage("Head", damage);
+                                    //target[0].TakeDamage("Head", damage);
                                     Debug.Log($"{target[0].Data.DisplayName}이 {target[0].runtimeParts[0].DisplayName}에 {damage}만큼 대미지를 줬다");
                                     self[0].plans.RemoveAt(0);
                                     break;
@@ -183,7 +185,7 @@ namespace Game.Battle
                 else if (self[0].plans.Count == 0 && target[0].plans.Count == 0)
                 {
                     Debug.Log("다음턴으로 갑니다");
-                    NextTurn();
+                    NextReadyTurn();
                     break;
                 }
 
@@ -251,8 +253,8 @@ namespace Game.Battle
             Actor.signal = 0;
 
             // 2. 공격과 방어 행동 목록 필터링
-            List<ActionDef> attackActions = new List<ActionDef>();
-            List<ActionDef> defenseActions = new List<ActionDef>();
+            List<ActionDef> attackActions = new();
+            List<ActionDef> defenseActions = new();
 
             if (Actor.MainWeapon.ActList != null)
             {

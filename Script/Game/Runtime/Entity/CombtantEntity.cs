@@ -12,19 +12,30 @@ namespace Game.Battle
 {
     // 팀 구분
     public enum Team { Player, Enemy }
+    public enum Type { Entity, Object }
 
-    
+
 
     public class CombtantEntity : MonoBehaviour
     {
+        //현재 캐릭터의 정보
         [Tooltip("이 캐릭터의 데이터")]
         public Combatant Data;
         public WeaponSO MainWeapon;
         public Parts[] runtimeParts;
+
+        //생물체 물체 표기
         public Team team;
+        public Type Type;
+
+        //내부 전투 규칙용 변수
         public List<ActionDef> plans;
         public int speed;
         public int signal;
+        public List<Passives> passives =new();
+
+
+
 
 
 
@@ -44,9 +55,6 @@ namespace Game.Battle
                 Enabled = p.Enabled,
                 Penalty = p.Penalty
             }).ToArray();
-
-
-
             
         }
 
@@ -54,16 +62,16 @@ namespace Game.Battle
         !(runtimeParts?.Any(p => p.IsBroken &&
         (p.Penalty == PartPenaltyType.CoreLoss ||
          p.Penalty == PartPenaltyType.VitalLoss)) ?? false);
-        public void TakeDamage(string partName, int amount)
+        public void TakeDamage(Parts part, int amount)
         {
-            var part = runtimeParts.FirstOrDefault(p => p.DisplayName == partName && p.Enabled);
-            var core = runtimeParts.FirstOrDefault(p => p.Penalty == PartPenaltyType.CoreLoss);
+            Parts core = runtimeParts.FirstOrDefault(p => p.Penalty == PartPenaltyType.CoreLoss);
             if (part == null) return;
 
 
 
             if (part.Id == core.Id)
             {
+                part.HP = Mathf.Clamp(core.HP - amount, 0, core.MaxHP);
                 core.HP = Mathf.Clamp(core.HP - amount, 0, core.MaxHP);
 
             }

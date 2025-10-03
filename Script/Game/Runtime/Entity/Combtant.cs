@@ -1,15 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using TurnRpg;
 using UnityEditor.EditorTools;
 using UnityEngine;
 
 namespace Game.Battle
 {
+
     [CreateAssetMenu(menuName = "Battle/Unit")]
     public class Combatant : ScriptableObject
     {
+        
+
         public string DisplayName = "Unit";
 
         [Header("Speed 스탯")]

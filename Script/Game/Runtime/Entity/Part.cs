@@ -1,10 +1,14 @@
 using Game.Battle;
+using NUnit.Framework;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 
 //부위 파괴시 패널티
 public enum PartPenaltyType { None, CoreLoss, VitalLoss, SpeedLoss, HandLoss }
+
+public enum PassiveMode { Global, Part}
 // 부위별 HP 컨테이너
 [Serializable]
 public class Parts
@@ -14,6 +18,7 @@ public class Parts
     public string Id = "Id";
     [Min(1)] public int MaxHP = 20;
     public int HP = 20;
+    public List<Passives> passives =new();
     public bool Enabled = true; // 부위 사용/미사용 토글
 
     public void Clamp() => HP = Mathf.Clamp(HP, 0, MaxHP);

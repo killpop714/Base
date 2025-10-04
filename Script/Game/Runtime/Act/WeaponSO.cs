@@ -8,7 +8,7 @@ public class WeaponSO : ScriptableObject
     public string id = "";
     public string Id => Id;
     [Tooltip("이 무기를 끼면 제공되는 공격 스킬들")]
-    public ActionDef[] ActList;
+    public ActSO[] ActList;
 
 //    #if UNITY_EDITOR
 //    // 프로젝트에 추가/이름바꿈할 때 자동으로 GUID 생성 (비어있을 때만)

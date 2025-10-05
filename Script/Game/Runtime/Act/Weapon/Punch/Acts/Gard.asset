@@ -19,4 +19,4 @@ MonoBehaviour:
   minValue: 10
   maxValue: 10
   triger: 0
-  passives: {fileID: 0}
+  passives: {fileID: 11400000, guid: 3ee220952426cc44d978cdfd2c8c4a9a, type: 2}

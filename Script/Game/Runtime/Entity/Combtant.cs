@@ -29,9 +29,12 @@ namespace Game.Battle
         public Type Type;
 
         //내부 전투 규칙용 변수
-        public List<ActSO> plans;
+        public List<ActSystem> plans;
+        public PassiveOverride Skin;
         public int speed;
         public int signal;
+
+        //전역 패시브
         public List<Passives> passives =new();
 
         

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using Unity.VisualScripting;
 using UnityEditor.UI;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -16,10 +18,11 @@ namespace Game.Battle
 
         //배경 패시브 정보
 
-        //턴 정보
+        //규칙 정보
         private enum TurnState { PlayerTurn, EnemyTurn }
         private TurnState currentTurn;
         private int turn = 1;
+        private int distance = 0;
 
 
         //UI 정보
@@ -64,51 +67,49 @@ namespace Game.Battle
 
 
             //시작 세팅
+            (Entity.self, Entity.target) = SetTurnEntites();// 해당 객체를 플레이어 적 구분해서 self와 target에 대입 함수
             StartTurn();
         }
 
-        //기본 턴 시스템
+        //초반 시작 준비 턴
         void StartTurn()
         {
-            //튜플 반환식으로 선공 객체와 후공 객체를 구분
-            (Entity.self, Entity.target) = GetTurnEntites();
+            BasicEntitySet();
 
-            Entity.self[0].RSetSpeed();
-            Entity.target[0].RSetSpeed();
+            //EnemyAiEnqueue();
 
-            player[0].signal = 0;
-            enemy[0].signal = 0;
-
-            (Entity.self, Entity.target) = GetTurnEntites();
-
-            AllExecutePassives(Triger.OnStartTurn, Entity.self[0], Entity.target[0]);
-            AllExecutePassives(Triger.OnStartTurn, Entity.target[0], Entity.self[0]);
+            AllExecutePassives(Triger.OnStartTurn, PassiveOverride.None, Entity.self[0], Entity.target[0]);
+            AllExecutePassives(Triger.OnStartTurn, PassiveOverride.None, Entity.target[0], Entity.self[0]);
 
             Debug.Log($"현재 턴 : {turn}");
             Debug.Log($"[플레이어 턴 시작] AP: {player[0].signal}");
         }
+
+        //시작 후 준비 턴
         void NextReadyTurn()
         {
-            //튜플 반환식으로 선공 객체와 후공 객체를 구분
-            (Entity.self, Entity.target) = GetTurnEntites();
+            BasicEntitySet();
 
-            Entity.self[0].RSetSpeed();
-            Entity.target[0].RSetSpeed();
+            //EnemyAiEnqueue();
 
-            player[0].signal = 0;
-            enemy[0].signal = 0;
-
-            (Entity.self, Entity.target) = GetTurnEntites();
-
-            AllExecutePassives(Triger.OnNextReadyTurn, Entity.self[0], Entity.target[0]);
-            AllExecutePassives(Triger.OnNextReadyTurn, Entity.target[0], Entity.self[0]);
+            AllExecutePassives(Triger.OnNextReadyTurn, PassiveOverride.None, Entity.self[0], Entity.target[0]);
+            AllExecutePassives(Triger.OnNextReadyTurn, PassiveOverride.None, Entity.target[0], Entity.self[0]);
 
             ++turn;
+
+            Debug.Log($"현재 턴 : {turn}");
+            Debug.Log($"[플레이어 턴 시작] AP: {player[0].signal}");
+
+            //두 팀 중 하나가 전멸시 전투 종료 
+            if (!Entity.self[0].IsAlive || !Entity.target[0].IsAlive)
+            {
+                EndTurn();
+            }
         }
         void EndTurn()
         {
-            AllExecutePassives(Triger.OnEndTurn, Entity.self[0], Entity.target[0]);
-            AllExecutePassives(Triger.OnEndTurn, Entity.target[0], Entity.self[0]);
+            AllExecutePassives(Triger.OnEndTurn, PassiveOverride.None, Entity.self[0], Entity.target[0]);
+            AllExecutePassives(Triger.OnEndTurn, PassiveOverride.None, Entity.target[0], Entity.self[0]);
 
             Debug.Log($"적 사망 시각: {turn} 이다");
         }
@@ -118,6 +119,9 @@ namespace Game.Battle
         {
             //확률로 선공 후공 정하기
             RTurn();
+
+            //튜플 반환식으로 선공 객체와 후공 객체를 구분
+            (Entity.self, Entity.target) = SetTurnEntites();
 
 
 
@@ -129,7 +133,7 @@ namespace Game.Battle
                     Debug.Log("값이 없으므로 상대에게 선공을 넘깁니다.");
                     //공수교대
                     currentTurn = currentTurn == TurnState.PlayerTurn ? TurnState.EnemyTurn : TurnState.PlayerTurn;
-                    (Entity.self, Entity.target) = GetTurnEntites();
+                    (Entity.self, Entity.target) = SetTurnEntites();
 
                     //다음 self도 값이 없을 시 턴을 넘김
                     if (Entity.self[0].plans.Count == 0)
@@ -143,21 +147,29 @@ namespace Game.Battle
                 }
                 else
                 {
-
+                    //현재 self의 plan이며 로직을 돌면서 제거된 플랜을 다른 plan[1]이 plan[0]을 채운다.
                     var selfPlan = Entity.self[0].plans[0];
 
+                    
+
+     
+                    
+
                     Parts targetPart = Entity.target[0].runtimeParts[0];
+
 
                     switch (selfPlan.Tag)
                     {
                         //self의 plan이 공격 태그일 경우
                         case ActTag.Suppress:
-
+                            
                             while (true)
                             {
-                                try
-                                {
+                                if (Entity.target[0].plans.Count > 0) 
+                                { 
+                                    //상대 플랜이다. 이것도 마찬가지로 [0] 중심이다
                                     var targetPlan = Entity.target[0].plans[0];
+
                                     //상대 plan이 생존일 경우 자신이 공격 시작
                                     if (targetPlan.Tag == ActTag.Survival)
                                     {
@@ -181,14 +193,17 @@ namespace Game.Battle
                                     }
                                 }
                                 //targetPlan의 값이 아예 없을때 예외 처리
-                                catch (ArgumentException)
+                                else if(Entity.target[0].plans.Count == 0)
                                 {
                                     int damage = selfPlan.RGetDamage();
                                     Entity.target[0].TakeDamage(targetPart, damage);
                                     Debug.Log($"{Entity.target[0].Data.DisplayName}이 {targetPart.DisplayName}에 {damage}만큼 대미지를 줬다");
 
-                                    AllExecutePassives(Triger.OnSuppress, Entity.self[0], Entity.target[0]);
-                                    AllExecutePassives(Triger.OnHit, Entity.target[0], Entity.self[0]);
+                                    ApplyPassive(Triger.OnSuppress, PassiveOverride.None, Entity.self[0], Entity.target[0], targetPart, selfPlan.Passives);
+
+
+                                    AllExecutePassives(Triger.OnSuppress, PassiveOverride.None,Entity.self[0], Entity.target[0]);
+                                    AllExecutePassives(Triger.OnHit, PassiveOverride.None, Entity.target[0], Entity.self[0]);
 
 
                                     Entity.self[0].plans.RemoveAt(0);
@@ -202,9 +217,41 @@ namespace Game.Battle
                             Entity.self[0].plans.RemoveAt(0);
                             break;
 
+                        //self의 plan이 기타일 경우 
+                        case ActTag.Utility:
+                            try
+                            {
+                                //상대 플랜이다. 이것도 마찬가지로 [0] 중심이다
+                                var targetPlan = Entity.target[0].plans[0];
+
+                                //상대 plan이 방어이면 무시하고 자기만 RNG 돌리기
+                                if (targetPlan.Tag == ActTag.Suppress)
+                                {
+
+                                }
+
+                                //상대 plan이 공격이면 둘다 RNG를 돌리고 상대가 거리가 되고 공격이 성공하면 유틸이 성공해도 실패로 간주
+                                else if(targetPlan.Tag == ActTag.Survival)
+                                {
+
+                                }
+
+                                //둘다 무조건 앞면일시 둘다 따로 작동
+                                else if(targetPlan.Tag == ActTag.Utility)
+                                {
+
+                                }
+                            }
+                            catch (ArgumentException) 
+                            {
+
+                            }
+                            break;
+
                     }
                 }
 
+                //두 팀 중 하나가 전멸시 전투 종료 
                 if (!Entity.self[0].IsAlive || !Entity.target[0].IsAlive)
                 {
                     EndTurn();
@@ -393,7 +440,7 @@ namespace Game.Battle
         }
 
         //공수 교대 튜플 함수
-        private (List<Combtant> self, List<Combtant> target) GetTurnEntites()
+        private (List<Combtant> self, List<Combtant> target) SetTurnEntites()
         {
             if (currentTurn == TurnState.PlayerTurn)
                 return (player, enemy);
@@ -403,25 +450,40 @@ namespace Game.Battle
 
         }
 
-        private void AllExecutePassives(Triger triger, Combtant self, Combtant target)
+
+        //패시브 적용 로직
+        private void ApplyPassive(Triger triger, PassiveOverride passiveOverrider, Combtant self, Combtant target, Parts part ,Passives passive)
+        {
+            passive.Apply(triger, passiveOverrider, self, target, part);
+        }
+
+        //모든 패시브를 작동하는 로직
+        private void AllExecutePassives(Triger triger, PassiveOverride passiveOverride,Combtant self, Combtant target)
         {
 
             //전역 패시브 작동 로직
             foreach (Passives globalPassive in self.passives)
             {
-                globalPassive.Excute(triger, self, target, target.runtimeParts[0]);
+                globalPassive.Execute(triger, passiveOverride,self, target, target.runtimeParts[0]);
             }
 
             //파트 패시브 작동 로직
             foreach (Parts part in self.runtimeParts)
             {
-                Debug.Log($"{part.DisplayName}");
-                foreach (Passives partPassive in part.passives)
+                foreach (Passives partPassive in part.passives.ToList())
                 {
-                    Debug.Log($"{partPassive}");
-                    partPassive.Excute(triger, self, target, part);
+                    partPassive.Execute(triger, passiveOverride, self, target, part);
                 }
             }
+        }
+
+        private void BasicEntitySet()
+        {
+            Entity.self[0].RSetSpeed();
+            Entity.target[0].RSetSpeed();
+
+            player[0].signal = 0;
+            enemy[0].signal = 0;
         }
     } 
 }

@@ -3,14 +3,14 @@ using System;
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "Battle/Passives/None", fileName = "None")]
-public class None : Passives
+public class TurnNone : Passives
 {
-    public override void Apply(Triger triger, Combtant self, Combtant target, Parts part)
+    public override void Apply(Triger triger, PassiveOverride passiveOverrider, Combtant self, Combtant target, Parts part)
     {
         throw new NotImplementedException();
     }
 
-    public override void Excute(Triger triger, Combtant self, Combtant target, Parts part)
+    public override void Execute(Triger triger, PassiveOverride passiveOverrider, Combtant self, Combtant target, Parts part)
     {
         Debug.Log("¿€µø¡ﬂ");
     }
@@ -19,4 +19,6 @@ public class None : Passives
     {
         throw new NotImplementedException();
     }
+
+
 }

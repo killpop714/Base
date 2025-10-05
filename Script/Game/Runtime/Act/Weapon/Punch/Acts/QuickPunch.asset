@@ -15,6 +15,8 @@ MonoBehaviour:
   displayName: QuickPunch
   tag: 1
   signal: 1
+  deleteSignal: 1
   minValue: 10
   maxValue: 10
-  damage: 10
+  triger: 0
+  passives: {fileID: 11400000, guid: f320d4615801ddc4d89ccf41d7b1cf35, type: 2}

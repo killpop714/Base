@@ -13,31 +13,34 @@ MonoBehaviour:
   m_Name: Player
   m_EditorClassIdentifier: Assembly-CSharp::Game.Battle.Combatant
   DisplayName: Player
-  Team: 0
   MinSpeed: 5
   MaxSpeed: 8
   parts:
   - DisplayName: Head
-    Id: Id
+    Id: AdeHead
     MaxHP: 30
     HP: 30
+    passives: []
     Enabled: 1
     Penalty: 2
   - DisplayName: Trunk
-    Id: Id
+    Id: AdeTrunk
     MaxHP: 30
     HP: 30
+    passives: []
     Enabled: 1
     Penalty: 1
   - DisplayName: Arm
     Id: Id
     MaxHP: 30
     HP: 30
+    passives: []
     Enabled: 1
     Penalty: 4
   - DisplayName: Leg
     Id: Id
     MaxHP: 30
     HP: 30
+    passives: []
     Enabled: 1
     Penalty: 3

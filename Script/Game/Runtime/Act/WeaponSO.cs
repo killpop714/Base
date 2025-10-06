@@ -1,22 +1,30 @@
+using Game.Battle;
+using System;
+using System.Collections.Generic;
+using Unity.InferenceEngine;
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "Battle/Weapon", fileName = "NewWeapon")]
+
+[CreateAssetMenu(fileName = "New Weapon", menuName = "Game/Weapon")]
 public class WeaponSO : ScriptableObject
 {
-    public string DisplayName = "Weapon";
+    [Header("무기 기본 정보")]
+    public string displayName = "Sword";
+    public int id;
+    public Sprite icon;
 
-    public string id = "";
-    public string Id => Id;
-    [Tooltip("이 무기를 끼면 제공되는 공격 스킬들")]
-    public ActSO[] ActList;
+    [Header("연결된 행동 템플릿")]
+    public List<ActSO> ActList;  // 🧠 무기별 행동 (ActSO 연결)
 
-//    #if UNITY_EDITOR
-//    // 프로젝트에 추가/이름바꿈할 때 자동으로 GUID 생성 (비어있을 때만)
-//    private void OnValidate()
-//    {
-//        if (string.IsNullOrEmpty(id))
-//            id = System.Guid.NewGuid().ToString("N");
-//    }
-//#endif
+    public void CreateCheckDisplayname(List<Act> actList)
+    {
+        actList.Clear();
 
+        for(int i =0; i < ActList.Count; i++)
+        {
+            actList.Add(new Act());
+            actList[i].displayName = displayName = ActList[0].displayName;
+    }
+
+    }
 }

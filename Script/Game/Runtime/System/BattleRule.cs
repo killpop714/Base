@@ -14,7 +14,7 @@ namespace Game.Battle
     public class BattleRule : MonoBehaviour
     {
         //참조 정보
-        public CombatantSO Combatant;
+        public ActSystem actSystem;
 
         //배경 패시브 정보
 
@@ -42,6 +42,10 @@ namespace Game.Battle
 
         void Start()
         {
+            actSystem = GetComponent<ActSystem>();
+
+            actSystem.SetAct();
+
             root = uiDocument.rootVisualElement;
             //메인 조합
             main = root.Q<VisualElement>("main");
@@ -158,7 +162,7 @@ namespace Game.Battle
                     Parts targetPart = Entity.target[0].runtimeParts[0];
 
 
-                    switch (selfPlan.Tag)
+                    switch (selfPlan.tag)
                     {
                         //self의 plan이 공격 태그일 경우
                         case ActTag.Suppress:
@@ -171,7 +175,7 @@ namespace Game.Battle
                                     var targetPlan = Entity.target[0].plans[0];
 
                                     //상대 plan이 생존일 경우 자신이 공격 시작
-                                    if (targetPlan.Tag == ActTag.Survival)
+                                    if (targetPlan.tag == ActTag.Survival)
                                     {
                                         int damage = selfPlan.RGetDamage() / 10;
 
@@ -186,7 +190,7 @@ namespace Game.Battle
                                     }
 
                                     //공격일 경우 상대 공격을 버리고 다시 반복문 돌림
-                                    else if (targetPlan.Tag == ActTag.Suppress)
+                                    else if (targetPlan.tag == ActTag.Suppress)
                                     {
                                         Debug.Log("상대 공격 버림");
                                         Entity.target[0].plans.RemoveAt(0);
@@ -199,7 +203,7 @@ namespace Game.Battle
                                     Entity.target[0].TakeDamage(targetPart, damage);
                                     Debug.Log($"{Entity.target[0].Data.DisplayName}이 {targetPart.DisplayName}에 {damage}만큼 대미지를 줬다");
 
-                                    ApplyPassive(Triger.OnSuppress, PassiveOverride.None, Entity.self[0], Entity.target[0], targetPart, selfPlan.Passives);
+                                    ApplyPassive(Triger.OnSuppress, PassiveOverride.None, Entity.self[0], Entity.target[0], targetPart, selfPlan.passives);
 
 
                                     AllExecutePassives(Triger.OnSuppress, PassiveOverride.None,Entity.self[0], Entity.target[0]);
@@ -225,19 +229,19 @@ namespace Game.Battle
                                 var targetPlan = Entity.target[0].plans[0];
 
                                 //상대 plan이 방어이면 무시하고 자기만 RNG 돌리기
-                                if (targetPlan.Tag == ActTag.Suppress)
+                                if (targetPlan.tag == ActTag.Suppress)
                                 {
 
                                 }
 
                                 //상대 plan이 공격이면 둘다 RNG를 돌리고 상대가 거리가 되고 공격이 성공하면 유틸이 성공해도 실패로 간주
-                                else if(targetPlan.Tag == ActTag.Survival)
+                                else if(targetPlan.tag == ActTag.Survival)
                                 {
 
                                 }
 
                                 //둘다 무조건 앞면일시 둘다 따로 작동
-                                else if(targetPlan.Tag == ActTag.Utility)
+                                else if(targetPlan.tag == ActTag.Utility)
                                 {
 
                                 }
@@ -278,14 +282,14 @@ namespace Game.Battle
             actList.Clear();
 
             //ActList값 읽어서 ui바에 추가하기
-            var MainWeapon = player[0].MainWeapon;
-            foreach (var act in MainWeapon.ActList)
+            var MainWeapon = player[0].mainWeapon;
+            foreach (var act in MainWeapon.actList)
             {
                 if (act == null) continue;
 
                 var b = new Button(() => Enqueue(act, player[0]))
                 {
-                    text = $"{act.name}(Signal: {act.Signal})"
+                    text = $"{act.displayName}(Signal: {act.signal})"
                 };
                 actList.Add(b);
             }
@@ -294,121 +298,28 @@ namespace Game.Battle
         }
 
         //댁을 넣는 조건문 함수
-        void Enqueue(ActSO act, Combtant Actor)
+        void Enqueue(Act act, Combtant Actor)
         {
 
             if (Actor.team == Team.Player)
             {
-                if (Actor.signal + act.Signal > Actor.speed)
+                if (Actor.signal + act.signal > Actor.speed)
                 {
                     Debug.Log("신호를 넘었습니다. \n다른 기술로 넣든 아님 턴을 넘기세요.");
                     return;
                 }
 
                 Actor.plans.Add(act);
-                Actor.signal += act.Signal;
+                Actor.signal += act.signal;
 
-                Debug.Log($"{act.DisplayName}을 넣었습니다. \n현재 신호 : {Actor.signal} 사용 가능 신호 : {Actor.speed - Actor.signal}");
+                Debug.Log($"{act.displayName}을 넣었습니다. \n현재 신호 : {Actor.signal} 사용 가능 신호 : {Actor.speed - Actor.signal}");
             }
         }
 
         //적 ai가 댁을 짜는 함수
         void EnemyAiEnqueue()
         {
-            // 1. 적 엔티티 및 기본 정보 확인
-            if (enemy == null || enemy.Count == 0 || enemy[0] == null || enemy[0].MainWeapon == null)
-            {
-                Debug.LogError("적 엔티티 또는 무기 정보가 유효하지 않습니다. AI 턴을 건너뜝니다.");
-                return;
-            }
-
-            Combtant Actor = enemy[0];
-
-            // 이전 계획 및 시그널 초기화
-            Actor.plans.Clear();
-            Actor.signal = 0;
-
-            // 2. 공격과 방어 행동 목록 필터링
-            List<ActSO> attackActions = new();
-            List<ActSO> defenseActions = new();
-
-            if (Actor.MainWeapon.ActList != null)
-            {
-                foreach (var act in Actor.MainWeapon.ActList)
-                {
-                    if (act == null) continue;
-
-                    if (act.Tag == ActTag.Suppress)
-                    {
-                        attackActions.Add(act);
-                    }
-                    else if (act.Tag == ActTag.Survival)
-                    {
-                        defenseActions.Add(act);
-                    }
-                }
-            }
-
-            if (attackActions.Count == 0)
-            {
-                Debug.LogWarning("적에게 사용할 수 있는 공격 행동이 없습니다.");
-            }
-
-            // 3. 남은 Signal이 허용하는 한 행동을 무작위로 추가
-            while (true)
-            {
-                int remainingSignal = Actor.speed - Actor.signal;
-
-                // 실행 가능한 공격 및 방어 행동 리스트 준비
-                List<ActSO> affordableAttack = attackActions
-                    .FindAll(act => act.Signal <= remainingSignal);
-
-                List<ActSO> affordableDefense = defenseActions
-                    .FindAll(act => act.Signal <= remainingSignal);
-
-                // 더 이상 아무 행동도 할 수 없으면 종료
-                if (affordableAttack.Count == 0 && affordableDefense.Count == 0)
-                {
-                    break;
-                }
-
-                ActSO selectedAct = null;
-
-                // 행동 선택 로직: 25% 확률로 방어, 75% 확률로 공격 (방어가 없거나 Signal이 안되면 공격)
-                int roll = UnityEngine.Random.Range(0, 100);
-
-                if (roll < 25 && affordableDefense.Count > 0) // 25% 확률로 방어 선택 시도
-                {
-                    // 실행 가능한 방어 행동 중 무작위 선택
-                    int randomIndex = UnityEngine.Random.Range(0, affordableDefense.Count);
-                    selectedAct = affordableDefense[randomIndex];
-                    Debug.Log("적 AI: 방어 행동을 선택했습니다.");
-                }
-                else if (affordableAttack.Count > 0) // 75% 확률 또는 방어 불가 시 공격 선택
-                {
-                    // 실행 가능한 공격 행동 중 무작위 선택
-                    int randomIndex = UnityEngine.Random.Range(0, affordableAttack.Count);
-                    selectedAct = affordableAttack[randomIndex];
-                    Debug.Log("적 AI: 공격 행동을 선택했습니다.");
-                }
-                else if (affordableDefense.Count > 0) // 공격도 불가능한데 방어는 가능하다면 방어
-                {
-                    int randomIndex = UnityEngine.Random.Range(0, affordableDefense.Count);
-                    selectedAct = affordableDefense[randomIndex];
-                    Debug.Log("적 AI: 공격 불가로 방어 행동을 선택했습니다.");
-                }
-                else
-                {
-                    // 모든 행동이 Signal 한도 초과
-                    break;
-                }
-
-                // 선택된 행동 큐에 추가 및 Signal 업데이트
-                Actor.plans.Add(selectedAct);
-                Actor.signal += selectedAct.Signal;
-
-                Debug.Log($"적 AI: {selectedAct.DisplayName}을(를) 계획에 추가. 현재 신호: {Actor.signal}/{Actor.speed}");
-            }
+           
         }
 
         void MainShow()

@@ -8,7 +8,6 @@ using UnityEngine;
 //부위 파괴시 패널티
 public enum PartPenaltyType { None, CoreLoss, VitalLoss, SpeedLoss, HandLoss }
 
-public enum PassiveMode { Global, Part}
 // 부위별 HP 컨테이너
 [Serializable]
 public class Parts

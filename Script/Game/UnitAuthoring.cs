@@ -1,19 +1,19 @@
-using UnityEngine;
-using Unity.Entities;
+//using UnityEngine;
+//using Unity.Entities;
 
-public class UnitAuthoring : MonoBehaviour
-{
-    [SerializeField] private int count = 1;
+//public class UnitAuthoring : MonoBehaviour
+//{
+//    [SerializeField] private int count = 1;
 
-    void Start()
-    {
-        var entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+//    void Start()
+//    {
+//        var entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
 
-        for (int i = 0; i < count; i++)
-        {
-            Entity e = entityManager.CreateEntity(typeof(Unit));
-            entityManager.SetComponentData(e, new Unit { sid = i });
-            Debug.Log($"UnitSpawner俊辑 积己等 Entity: {e.Index}-{e.Version}");
-        }
-    }
-}
+//        for (int i = 0; i < count; i++)
+//        {
+//            Entity e = entityManager.CreateEntity(typeof(Unit));
+//            entityManager.SetComponentData(e, new Unit { sid = i });
+//            Debug.Log($"UnitSpawner俊辑 积己等 Entity: {e.Index}-{e.Version}");
+//        }
+//    }
+//}

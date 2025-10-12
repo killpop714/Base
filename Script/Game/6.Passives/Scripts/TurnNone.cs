@@ -1,24 +1,24 @@
-using Game.Battle;
-using System;
-using UnityEngine;
+//using Game.Battle;
+//using System;
+//using UnityEngine;
 
-[CreateAssetMenu(menuName = "Battle/Passives/None", fileName = "None")]
-public class TurnNone : Passives
-{
-    public override void Apply(Triger triger, PassiveOverride passiveOverrider, Combtant self, Combtant target, Parts part)
-    {
-        throw new NotImplementedException();
-    }
+//[CreateAssetMenu(menuName = "Battle/Passives/None", fileName = "None")]
+//public class TurnNone : Passives
+//{
+//    public override void Apply(Triger triger, PassiveOverride passiveOverrider, Combtant self, Combtant target, Parts part)
+//    {
+//        throw new NotImplementedException();
+//    }
 
-    public override void Execute(Triger triger, PassiveOverride passiveOverrider, Combtant self, Combtant target, Parts part)
-    {
-        Debug.Log("작동중");
-    }
+//    public override void Execute(Triger triger, PassiveOverride passiveOverrider, Combtant self, Combtant target, Parts part)
+//    {
+//        Debug.Log("작동중");
+//    }
 
-    public override void Remove(Combtant self, Combtant target, Parts part)
-    {
-        throw new NotImplementedException();
-    }
+//    public override void Remove(Combtant self, Combtant target, Parts part)
+//    {
+//        throw new NotImplementedException();
+//    }
 
 
-}
+//}

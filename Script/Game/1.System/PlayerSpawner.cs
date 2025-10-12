@@ -1,12 +1,11 @@
 using UnityEngine;
 using Unity.Entities;
-using Game.Battle;
 
 namespace Game.Entity
 {
     public class EntityBaker : MonoBehaviour
     {
-        CombatantSO combatantSO;
+        
         Team team;
         Type type;
 

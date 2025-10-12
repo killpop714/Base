@@ -1,58 +1,79 @@
+using System.Collections.Generic;
+using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
-// 기존 Combatant 클래스
-public class Combatant
-{
-    public Entity entity;
-    public bool isPlayer;
-    public string name;
-}
+
 
 public class BattleTest : MonoBehaviour
 {
-    public EntityManager entityManager;
+    public EntityManager manager;
 
-    public Combatant playerCombatant;
+    public Entity Cplayer;
+    public Entity[] Cenemy;
+
+    
 
     void Start()
     {
+
         // 테스트용 Entity 생성
-        entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+        manager = World.DefaultGameObjectInjectionWorld.EntityManager;
 
-        Entity playerEntity = entityManager.CreateEntity();
+        var query = manager.CreateEntityQuery(typeof(UnitData), typeof(PlayerTag));
+        var player = query.ToEntityArray(Allocator.Temp);
+        Cplayer = manager.CreateEntity();
+        Cplayer = player[0];
+        player.Dispose();
 
-        // Unit 컴포넌트 추가 (예시)
-        entityManager.AddComponentData(playerEntity, new Unit { sid = 1, hp = 100 });
 
-        // Combatant에 연결
-        playerCombatant = new Combatant
+        var enemyQuery = manager.CreateEntityQuery(typeof(UnitData), typeof(EnemyTag));
+        var enemies = enemyQuery.ToEntityArray(Allocator.Temp);
+
+        Cenemy = new Entity[enemies.Length];
+        for(int i=0; i<enemies.Length;i++)
         {
-            entity = playerEntity,
-            isPlayer = true,
-            name = "Hero"
-        };
-
-        // Unit 데이터 가져오기
-        ReadUnitData(playerCombatant);
-    }
-
-    void ReadUnitData(Combatant c)
-    {
-        if (!entityManager.Exists(c.entity))
-        {
-            Debug.LogWarning($"Entity {c.name} does not exist!");
-            return;
+            Cenemy[i] = manager.CreateEntity();
+            Cenemy[i] = enemies[i];
         }
+        
+        enemies.Dispose();
 
-        // Entity로 Unit 데이터 읽기
-        Unit unitData = entityManager.GetComponentData<Unit>(c.entity);
 
-        Debug.Log($"Combatant {c.name} - SID: {unitData.sid}, HP: {unitData.hp}");
 
-        unitData.hp = 50;
+       
 
-        entityManager.SetComponentData(c.entity, unitData);
+
+
     }
+
+    void Update()
+    {
+        if (Keyboard.current.spaceKey.wasPressedThisFrame)
+        {
+
+            if (Cenemy.Length > 0)
+            {
+                var target = Cenemy[0];
+
+                UtilityDamage.TakeDamage(manager, target, 20);
+
+
+                var data = manager.GetComponentData<UnitData>(target);
+                Debug.Log($"데미지! 현재 HP = {data.hp}");
+
+                if(data.hp <= 0)
+                {
+                   
+                }
+            }
+        }
+    }
+
+
 }
+
+
+
 

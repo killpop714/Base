@@ -1,44 +1,34 @@
-﻿
+﻿using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+using Unity.Entities;
 
 
-//using Game.Battle;
-//using System.Collections.Generic;
-//using System.Linq;
-//using UnityEngine;
-//using Unity.Entities;
+public class Combatant
+{
+    //현재 캐릭터의 정보
+    [Tooltip("이 캐릭터의 데이터")]
+    public Entity Data;
+
+    ////무기 전역 관리 시스템
+    //public WeaponSystem weaponSystem;
+
+    ////지금 들고 있는 무기
+    //public Weapon mainWeapon;
+
+    //해당 객체의 동적 파트
+    public List<CombatantPart> parts;
 
 
-//public class Unit
-//{
-//    //현재 캐릭터의 정보
-//    [Tooltip("이 캐릭터의 데이터")]
-//    public CombatantSO Data;
+    //내부 전투 규칙용 변수
+    public List<ActComponent> plans;
 
-//    //ActSystem에서 해당 캐릭터의 숙련도 확률을 동적으로 관리하는 스크립트
-//    public ActSystem actSystem;
-//    //무기 전역 관리 시스템
-//    public WeaponSystem weaponSystem;
+    public PassiveOverride Skin;
+    public int speed;
+    public int signal;
+}
 
-//    //지금 들고 있는 무기
-//    public Weapon mainWeapon;
-
-//    //해당 객체의 동적 파트
-//    public Parts[] runtimeParts;
-
-//    //팀
-//    public Team team;
-
-//    //생물체 물체 표기
-//    public Type Type;
-
-//    //내부 전투 규칙용 변수
-//    public List<Act> plans;
-//    public PassiveOverride Skin;
-//    public int speed;
-//    public int signal;
-
-//    //전역 패시브
-//    public List<Passives> passives = new();
+    
 
 
 

@@ -21,14 +21,14 @@ public class BattleTest : MonoBehaviour
         // 테스트용 Entity 생성
         manager = World.DefaultGameObjectInjectionWorld.EntityManager;
 
-        var query = manager.CreateEntityQuery(typeof(UnitData), typeof(PlayerTag));
+        var query = manager.CreateEntityQuery(typeof(CombatantComponent), typeof(PlayerTag));
         var player = query.ToEntityArray(Allocator.Temp);
         Cplayer = manager.CreateEntity();
         Cplayer = player[0];
         player.Dispose();
 
 
-        var enemyQuery = manager.CreateEntityQuery(typeof(UnitData), typeof(EnemyTag));
+        var enemyQuery = manager.CreateEntityQuery(typeof(CombatantComponent), typeof(EnemyTag));
         var enemies = enemyQuery.ToEntityArray(Allocator.Temp);
 
         Cenemy = new Entity[enemies.Length];
@@ -60,7 +60,7 @@ public class BattleTest : MonoBehaviour
                 UtilityDamage.TakeDamage(manager, target, 20);
 
 
-                var data = manager.GetComponentData<UnitData>(target);
+                var data = manager.GetComponentData<CombatantComponent>(target);
                 Debug.Log($"데미지! 현재 HP = {data.hp}");
 
                 if(data.hp <= 0)

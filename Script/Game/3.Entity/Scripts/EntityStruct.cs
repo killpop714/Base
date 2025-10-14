@@ -12,7 +12,7 @@ public enum PassiveOverride { None}
 public enum Team { Player, Enemy }
 public enum Type { Entity, Object }
 
-public struct UnitData : IComponentData
+public struct CombatantComponent : IComponentData
 {
     public FixedString64Bytes displayName;
 
@@ -35,7 +35,7 @@ public struct UnitData : IComponentData
     public bool isAlive;
 }
 
-public struct UnitPart : IComponentData
+public struct CombatantPart : IComponentData
 {
     public FixedString64Bytes displayName;
 

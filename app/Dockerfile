@@ -8,7 +8,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app.py .
 
-EXPOSE 8080
+EXPOSE 5000
 
 # gunicorn으로 실행 (Flask 개발 서버 대신)
-CMD ["gunicorn", "-b", "0.0.0.0:8080", "app:app"]
+CMD ["gunicorn","-b","0.0.0.0:8080", "app:app"]
